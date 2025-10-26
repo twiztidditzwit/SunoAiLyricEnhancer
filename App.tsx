@@ -207,12 +207,12 @@ const App: React.FC = () => {
                     <h1 className="text-4xl sm:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-brand-primary to-brand-secondary bg-400% animate-text-shimmer">
                         Suno Prompt Enhancer
                     </h1>
-                    <p className="mt-2 text-lg text-content-200">
+                    <p className="mt-2 text-base sm:text-lg text-content-200">
                         Craft detailed Suno prompts by infusing your lyrics with AI-generated mixing instructions.
                     </p>
                 </header>
 
-                <main className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-fade-in-up" style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}>
+                <main className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fade-in-up" style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}>
                     <div className="flex flex-col gap-6">
                         {/* INPUTS */}
                         <div className="bg-base-200 p-6 rounded-lg shadow-lg">
@@ -223,7 +223,7 @@ const App: React.FC = () => {
                                 value={lyrics}
                                 onChange={(e) => setLyrics(e.target.value)}
                                 placeholder={`[Intro]\n...\n[Verse]\nThe rain falls down on the cold, dark street\n...\n[Chorus]\nAnd I'm walking alone again\n...`}
-                                className="w-full h-[35rem] p-3 bg-base-300 rounded-md border border-transparent focus:ring-2 focus:ring-brand-primary focus:outline-none resize-y transition-shadow,border-color duration-200"
+                                className="w-full h-96 md:h-[35rem] p-3 bg-base-300 rounded-md border border-transparent focus:ring-2 focus:ring-brand-primary focus:outline-none resize-y transition-shadow,border-color duration-200"
                             />
                         </div>
 
