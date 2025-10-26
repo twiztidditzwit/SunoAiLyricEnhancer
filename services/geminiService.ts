@@ -1,13 +1,11 @@
 import { GoogleGenAI } from "@google/genai";
 import { CLICHE_TERMS } from '../constants';
 
-const API_KEY = process.env.API_KEY;
-
-if (!API_KEY) {
-    throw new Error("API_KEY environment variable not set");
-}
-
-const ai = new GoogleGenAI({ apiKey: API_KEY });
+// The API key is now checked in the App.tsx component to provide a user-friendly
+// error message on deployment platforms like Vercel if the key is missing.
+// The '!' non-null assertion is safe because the UI won't render or call this
+// service if the API_KEY is not present.
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
 
 const generateSongStyle = async (feel: string, mood: string, speed: string, vocalStyle: string, instrumentation: string[], mastering: string): Promise<string> => {
     try {
