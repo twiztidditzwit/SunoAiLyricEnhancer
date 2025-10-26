@@ -1,14 +1,24 @@
 import { GoogleGenAI } from "@google/genai";
 import { CLICHE_TERMS } from '../constants';
 
-// The API key is now checked in the App.tsx component to provide a user-friendly
-// error message on deployment platforms like Vercel if the key is missing.
-// The '!' non-null assertion is safe because the UI won't render or call this
-// service if the API_KEY is not present.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
+// Lazily initialize the AI client to avoid crashing on startup if the API key is missing.
+// The main App component handles displaying the error message to the user.
+let ai: GoogleGenAI | null = null;
+
+const getAiInstance = (): GoogleGenAI => {
+    if (!process.env.API_KEY) {
+        // This should not be reached if the UI check works, but it's a safeguard.
+        throw new Error("Gemini API key is missing. Please set it in your environment variables.");
+    }
+    if (!ai) {
+        ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    }
+    return ai;
+};
 
 const generateSongStyle = async (feel: string, mood: string, speed: string, vocalStyle: string, instrumentation: string[], mastering: string): Promise<string> => {
     try {
+        const ai = getAiInstance();
         const instrumentsText = instrumentation.length > 0 ? `Key Instruments: ${instrumentation.join(', ')}` : 'No specific instruments requested';
         const prompt = `Generate a rich and detailed list of song style phrases based on these characteristics: Feel: ${feel}, Mood: ${mood}, Speed: ${speed}, Vocals: ${vocalStyle}, Mastering: ${mastering}, ${instrumentsText}. The output must be a single, comma-separated string of phrases. Aim for around 15-20 diverse and descriptive phrases covering genre, production, instrumentation, and overall vibe. Examples: 'raw lofi, acoustic ballad, intimate vocals, gentle strumming, tape hiss', 'polished epic, uplifting orchestral score, soaring strings, powerful brass, cinematic percussion'. Do not add any introductory text, explanation, or quotes.
 
@@ -33,6 +43,7 @@ ${CLICHE_TERMS}`;
 
 const expandLyrics = async (style: string, themeLyrics: string): Promise<string> => {
     try {
+        const ai = getAiInstance();
         const prompt = `You are an expert songwriter. Your task is to write a complete song based on a style and a theme.
         Style: "${style}"
         Theme/Inspiration (use this as a starting point, if empty, invent a topic that fits the style): "${themeLyrics}"
@@ -61,6 +72,7 @@ const expandLyrics = async (style: string, themeLyrics: string): Promise<string>
 
 const generateMixingPhrases = async (feel: string, mood: string, speed: string, vocalStyle: string, instrumentation: string[], mastering: string): Promise<string[]> => {
     try {
+        const ai = getAiInstance();
         const instrumentsText = instrumentation.length > 0 ? `Key Instruments: ${instrumentation.join(', ')}` : 'No specific instruments requested';
         const prompt = `Generate a comma-separated list of 50 short, descriptive music production and mixing phrases based on these characteristics: Feel: ${feel}, Mood: ${mood}, Speed: ${speed}, Vocals: ${vocalStyle}, Mastering: ${mastering}, ${instrumentsText}. The phrases should be suitable for a Suno prompt. Examples: 'punchy 808s', 'lush reverb tails', 'crisp hi-hats', 'warm analog bass', 'wide stereo vocals', 'gentle acoustic guitar strumming'. Do not add any introductory text or explanation, just the comma-separated list of phrases.
         
@@ -85,6 +97,7 @@ ${CLICHE_TERMS}`;
 
 export const generateStoryFromLyrics = async (lyrics: string, style: string, storyPrompt: string): Promise<string> => {
     try {
+        const ai = getAiInstance();
         const prompt = `You are a creative writer. Your task is to write a short, one-paragraph narrative scene that sets the stage for a song. The scene should be inspired by the song's style, lyrics, and an optional user-provided theme.
         
         Song Style: "${style}"
