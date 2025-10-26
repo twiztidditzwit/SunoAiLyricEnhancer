@@ -43,17 +43,29 @@ const App: React.FC = () => {
         setFinalStyleContent('');
         setOriginalityFeedback(null);
 
+        const isInstrumental = lyrics.trim().length === 0;
+
+        // If instrumental, update the vocal style setting for UI and for this generation
+        const vocalStyleForGeneration = isInstrumental ? 'No Vocals (Instrumental)' : settings.vocalStyle;
+        if (isInstrumental && settings.vocalStyle !== 'No Vocals (Instrumental)') {
+            setSettings(prev => ({ ...prev, vocalStyle: 'No Vocals (Instrumental)' }));
+        }
+
         try {
-            const rawStyle = await generateSongStyle(settings.feel, settings.mood, settings.speed, settings.vocalStyle, settings.instrumentation, settings.mastering);
+            const rawStyle = await generateSongStyle(settings.feel, settings.mood, settings.speed, vocalStyleForGeneration, settings.instrumentation, settings.mastering);
             const newSongStyle = rawStyle.split(',').map(s => s.trim()).join(' | ');
 
             let currentLyrics = lyrics;
-            const lyricsAreMissing = currentLyrics.trim().length < LYRIC_EXPANSION_THRESHOLD && !currentLyrics.includes('[Verse]');
-
-            if (settings.autoExpand && lyricsAreMissing) {
-                const expanded = await expandLyrics(rawStyle, currentLyrics);
-                setLyrics(expanded); // Update UI so user sees the generated lyrics
-                currentLyrics = expanded;
+            // Don't expand lyrics if it's meant to be an instrumental track
+            if (isInstrumental) {
+                currentLyrics = '';
+            } else {
+                const lyricsAreMissing = currentLyrics.trim().length < LYRIC_EXPANSION_THRESHOLD && !currentLyrics.includes('[Verse]');
+                if (settings.autoExpand && lyricsAreMissing) {
+                    const expanded = await expandLyrics(rawStyle, currentLyrics);
+                    setLyrics(expanded); // Update UI so user sees the generated lyrics
+                    currentLyrics = expanded;
+                }
             }
 
             let storyContent = '';
@@ -62,7 +74,7 @@ const App: React.FC = () => {
             }
             const storyBlock = storyContent ? `${storyContent}\n\n` : '';
 
-            const phrases = await generateMixingPhrases(settings.feel, settings.mood, settings.speed, settings.vocalStyle, settings.instrumentation, settings.mastering);
+            const phrases = await generateMixingPhrases(settings.feel, settings.mood, settings.speed, vocalStyleForGeneration, settings.instrumentation, settings.mastering);
             if (!phrases.length) {
                 const finalPromptContent = `[Style: ${newSongStyle}]\n${storyBlock}${currentLyrics}`.slice(0, SUNO_PROMPT_MAX_LENGTH);
                 setFinalStyleContent(newSongStyle.slice(0, STYLE_MAX_LENGTH));
@@ -220,7 +232,7 @@ const App: React.FC = () => {
                                 id="lyrics"
                                 value={lyrics}
                                 onChange={(e) => setLyrics(e.target.value)}
-                                placeholder={`[Intro]\n...\n[Verse]\nThe rain falls down on the cold, dark street\n...\n[Chorus]\nAnd I'm walking alone again\n...`}
+                                placeholder={`[Intro]\n...\n[Verse]\nThe rain falls down on the cold, dark street\n...\n[Chorus]\nAnd I'm walking alone again\n...\n\n(Leave blank to generate an instrumental track)`}
                                 className="w-full h-96 md:h-[35rem] p-3 bg-base-300 rounded-md border border-transparent focus:ring-2 focus:ring-brand-primary focus:outline-none resize-y transition-shadow,border-color duration-200"
                             />
                         </div>
@@ -235,7 +247,7 @@ const App: React.FC = () => {
                         {/* ACTION */}
                         <button
                             onClick={handleGenerate}
-                            disabled={isLoading || !lyrics}
+                            disabled={isLoading}
                             className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-brand-primary to-brand-secondary text-white font-bold py-3 px-4 rounded-lg shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed transform transition-all duration-200"
                         >
                             {isLoading ? (
