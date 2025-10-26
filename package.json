@@ -1,6 +1,6 @@
 {
-  "name": "suno-prompt-enhancer",
-  "version": "0.1.0",
-  "description": "An application that expands on user-provided lyrics to generate a detailed Suno prompt. It uses AI to add mixing and mastering instructions based on selected mood and style, filling up the remaining character limit to create a richer prompt.",
-  "private": true,
+  "name": "suno-prompt-enhancer"
+  "version": "0.1.0"
+  "description": "An application that expands on user-provided lyrics to generate a detailed Suno prompt. It uses AI to add mixing and mastering instructions based on selected mood and style, filling up the remaining character limit to create a richer prompt."
+  "private": true
 }
