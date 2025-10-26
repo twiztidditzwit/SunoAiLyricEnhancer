@@ -1,7 +1,27 @@
 {
   "name": "suno-prompt-enhancer",
+  "private": true,
   "version": "0.1.0",
   "description": "An application that expands on user-provided lyrics to generate a detailed Suno prompt. It uses AI to add mixing and mastering instructions based on selected mood and style, filling up the remaining character limit to create a richer prompt.",
-  "private": true,
-  "homepage": "."
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@google/genai": "^1.26.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.39",
+    "tailwindcss": "^3.4.4",
+    "typescript": "^5.5.3",
+    "vite": "^5.2.13"
+  }
 }
