@@ -1,0 +1,5 @@
+{
+  "name": "Suno Prompt Enhancer",
+  "description": "An application that expands on user-provided lyrics to generate a detailed Suno prompt. It uses AI to add mixing and mastering instructions based on selected mood and style, filling up the remaining character limit to create a richer prompt.",
+  "requestFramePermissions": []
+}
