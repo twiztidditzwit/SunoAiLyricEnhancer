@@ -1,14 +1,21 @@
 import { GoogleGenAI } from "@google/genai";
 import { CLICHE_TERMS } from '../constants';
 
-// Lazily initialize the AI client. As per guidelines, assume API key is present.
+// Lazily initialize the AI client.
 let ai: GoogleGenAI | null = null;
 
+// FIX: Per coding guidelines, API key must be read from process.env.API_KEY
+// and used to initialize GoogleGenAI. This also resolves the TypeScript error
+// for `import.meta.env`.
 const getAiInstance = (): GoogleGenAI => {
-    // FIX: Use process.env.API_KEY as per the guidelines and assume it's available.
-    // This also resolves the TypeScript errors with import.meta.env.
+    const apiKey = process.env.API_KEY;
+
+    if (!apiKey) {
+        // This should not be reached if the UI check works, but it's a safeguard.
+        throw new Error("Gemini API key is missing. Please set API_KEY in your environment variables.");
+    }
     if (!ai) {
-        ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+        ai = new GoogleGenAI({ apiKey });
     }
     return ai;
 };

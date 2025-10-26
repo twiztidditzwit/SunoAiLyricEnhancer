@@ -31,6 +31,10 @@ const App: React.FC = () => {
     const [isStyleCopied, setIsStyleCopied] = useState<boolean>(false);
     const [isMounted, setIsMounted] = useState<boolean>(false);
     const [originalityFeedback, setOriginalityFeedback] = useState<string | null>(null);
+    
+    // FIX: Per coding guidelines, API key must be read from process.env.API_KEY.
+    // This also resolves the TypeScript error for `import.meta.env`.
+    const apiKey = process.env.API_KEY;
 
     useEffect(() => {
         setIsMounted(true);
@@ -209,6 +213,31 @@ const App: React.FC = () => {
             setTimeout(() => setIsStyleCopied(false), 2000);
         }
     };
+
+    if (!apiKey) {
+        return (
+          <div className="min-h-screen font-sans p-4 sm:p-6 lg:p-8 flex items-center justify-center">
+            <div className="max-w-2xl text-center bg-base-200 p-8 rounded-lg shadow-lg animate-fade-in-up">
+              <h1 className="text-3xl font-bold text-red-400 mb-4">Configuration Error</h1>
+              <p className="text-content-200 mb-6">
+                The Gemini API key is missing. This application cannot function without it.
+              </p>
+              <p className="text-content-200">
+                {/* FIX: Updated environment variable name in user-facing error message. */}
+                Please add your API key as an environment variable named <code className="bg-base-300 px-2 py-1 rounded-md text-yellow-300">API_KEY</code> in your Vercel project settings.
+              </p>
+              <a 
+                href="https://vercel.com/docs/projects/environment-variables" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="mt-6 inline-block bg-brand-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-brand-secondary transition-colors"
+              >
+                Learn how to add environment variables on Vercel
+              </a>
+            </div>
+          </div>
+        );
+    }
 
     return (
         <div className="min-h-screen font-sans p-4 sm:p-6 lg:p-8">
