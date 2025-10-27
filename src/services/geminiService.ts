@@ -1,80 +1,118 @@
-import { GoogleGenAI } from "@google/genai";
-import { AppState, SongSection } from '../types';
+import { GoogleGenAI, Type } from "@google/genai";
+import { AppState, OriginalityScore } from "../types";
 
-if (!process.env.API_KEY) {
-    throw new Error("API_KEY environment variable is not set");
-}
-
+// Fix: Initialize the GoogleGenAI client correctly.
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 const buildPrompt = (state: AppState): string => {
-    let prompt = `You are an expert music producer and audio engineer creating a detailed prompt for a music AI like Suno.
-Your task is to take a structured song concept and format it into a complete, professional, copy-paste ready prompt.
+  let prompt = `Create a detailed and production-ready prompt for an AI music generator like Suno AI. The prompt should be enclosed in a single markdown code block.
 
-The final output MUST follow this format for each section:
-[Section Name – musical vibe; key instruments
-{Detailed mixing and production notes, including specific frequencies, compression, reverb, effects, and mastering targets like LUFS.}]
-Lyrics for the section...
-⸻
+Here are the details for the song:
 
-Here is the structured song concept provided by the user:
+**Core Idea:** ${state.coreIdea}
+**Genre:** ${state.genre}
+**Mood:** ${state.mood}
+**Instrumentation:** ${state.instrumentation}
+**Structure:** ${state.structure.join(', ')}
+${state.lyrics ? `**Lyrics:**\n${state.lyrics}` : `**Lyrics:** The AI should generate creative and original lyrics based on the core idea. Avoid clichés and overused imagery like "neon lights," "city that never sleeps," "shattered glass," or "shadows dancing."`}
+**Other Details:** ${state.otherDetails || 'None'}
 
-## Overall Vibe
-- Genre: ${state.genre || 'Not specified'}
-- Mood: ${state.mood || 'Not specified'}
-- Theme: ${state.theme || 'Not specified'}
+Based on all this information, generate a single, cohesive prompt that an AI music generator can use to create a high-quality song. The prompt should describe the style, tempo, instrumentation, and vocal characteristics clearly. It should integrate the provided structure and lyrics seamlessly.`;
 
-## Selected Instruments
-${state.instruments.length > 0 ? state.instruments.join(', ') : 'Not specified'}
-
-## Song Structure and Details
-`;
-
-    state.songStructure.forEach((section: SongSection) => {
-        const details = state.sectionDetails[section.id] || { lyrics: '', instruments: {} };
-        prompt += `
----
-### Section: ${section.name} (${section.type})
-
-**Lyrics:**
-${details.lyrics || '(No lyrics provided for this section)'}
-
-**Instrument Notes:**
-`;
-        if (state.instruments.length > 0) {
-            state.instruments.forEach(instrument => {
-                prompt += `- ${instrument}: ${details.instruments[instrument] || 'No specific notes'}\n`;
-            });
-        } else {
-            prompt += `(No instruments selected)\n`;
-        }
-    });
-
-    prompt += `
----
-
-Now, based on ALL of the above information, generate the complete and final Suno prompt.
-Infer the professional mixing/mastering details ({...}) from the user's high-level notes and the overall genre/mood. Be creative and specific. For example, specify amp models for guitars, types of synth pads, drum machine models, compression ratios, and reverb lengths.
-Ensure the final output is ONLY the formatted prompt and nothing else. Do not include any preamble, explanation, or markdown formatting.
-`;
-
-    return prompt;
+  return prompt;
 };
 
 export const generateSunoPrompt = async (state: AppState): Promise<string> => {
-    const model = 'gemini-2.5-pro'; // Use a more powerful model for this complex task.
+  try {
     const prompt = buildPrompt(state);
+    const model = 'gemini-2.5-flash';
 
+    // Fix: Use the correct method to generate content.
+    const response = await ai.models.generateContent({
+      model: model,
+      contents: prompt,
+      config: {
+        temperature: 0.7,
+        topP: 0.95,
+        maxOutputTokens: 1024,
+      }
+    });
+
+    // Fix: Extract text from the response correctly.
+    const text = response.text.trim();
+    
+    // Extract content from markdown code block if present
+    const match = text.match(/```(?:[\w-]+\n)?([\s\S]*?)```/);
+    if (match && match[1]) {
+      return match[1].trim();
+    }
+
+    return text;
+
+  } catch (error) {
+    console.error("Error generating Suno prompt:", error);
+    if (error instanceof Error) {
+        throw new Error(`Failed to generate prompt: ${error.message}`);
+    }
+    throw new Error("An unknown error occurred while communicating with the Gemini API.");
+  }
+};
+
+
+export const analyzeOriginality = async (lyrics: string): Promise<OriginalityScore> => {
+    if (!lyrics.trim()) {
+        return { score: 0, explanation: 'No lyrics provided to analyze.' };
+    }
+    
     try {
+        const prompt = `Analyze the following lyrics for originality. Provide a score from 0 to 100, where 100 is highly original and 0 is completely generic or plagiarized. Also provide a brief explanation for your score. 
+
+        Lyrics to analyze:
+        ---
+        ${lyrics}
+        ---
+        `;
+
+        const model = 'gemini-2.5-flash';
+        
+        // Fix: Use responseSchema when requesting a JSON response.
         const response = await ai.models.generateContent({
             model: model,
             contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: Type.OBJECT,
+                    properties: {
+                        score: {
+                            type: Type.NUMBER,
+                            description: "Originality score from 0 to 100."
+                        },
+                        explanation: {
+                            type: Type.STRING,
+                            description: "Brief explanation for the score."
+                        }
+                    },
+                    required: ['score', 'explanation']
+                }
+            }
         });
         
-        return response.text.trim();
+        // Fix: Extract text from the response correctly.
+        const jsonText = response.text.trim();
+        const result = JSON.parse(jsonText);
+
+        if (typeof result.score === 'number' && typeof result.explanation === 'string') {
+            return result as OriginalityScore;
+        } else {
+            throw new Error('Invalid JSON structure in response.');
+        }
 
     } catch (error) {
-        console.error("Error generating prompt with Gemini API:", error);
-        throw new Error("Failed to generate prompt. Check your API key and try again.");
+        console.error("Error analyzing originality:", error);
+        if (error instanceof Error) {
+            throw new Error(`Failed to analyze lyrics: ${error.message}`);
+        }
+        throw new Error("An unknown error occurred while analyzing lyrics.");
     }
-};
+}

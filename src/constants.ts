@@ -1,31 +1,27 @@
-import { AppState, SectionType } from "./types";
+import { AppState } from "./types";
+
+export const CORE_IDEA_MAX_LENGTH = 500;
+export const LYRICS_MAX_LENGTH = 4000;
+export const OTHER_DETAILS_MAX_LENGTH = 500;
+
+export const GENRES = [
+  "Pop", "Rock", "Hip-Hop", "Electronic", "R&B", "Jazz", "Classical", "Folk", "Country", "Metal", "Blues", "Reggae", "Indie", "Alternative"
+];
+
+export const MOODS = [
+  "Happy", "Sad", "Energetic", "Relaxing", "Romantic", "Epic", "Melancholic", "Uplifting", "Mysterious", "Aggressive", "Nostalgic"
+];
+
+export const STRUCTURE_PARTS = [
+  "Intro", "Verse", "Pre-Chorus", "Chorus", "Post-Chorus", "Bridge", "Guitar Solo", "Instrumental Break", "Outro", "Fade Out"
+];
 
 export const INITIAL_STATE: AppState = {
-    genre: '',
-    mood: '',
-    theme: '',
-    instruments: [],
-    songStructure: [
-        { id: crypto.randomUUID(), type: 'Verse', name: 'Verse 1' },
-        { id: crypto.randomUUID(), type: 'Chorus', name: 'Chorus' },
-        { id: crypto.randomUUID(), type: 'Verse', name: 'Verse 2' },
-        { id: crypto.randomUUID(), type: 'Chorus', name: 'Chorus' },
-        { id: crypto.randomUUID(), type: 'Bridge', name: 'Bridge' },
-        { id: crypto.randomUUID(), type: 'Chorus', name: 'Chorus' },
-        { id: crypto.randomUUID(), type: 'Outro', name: 'Outro' },
-    ],
-    sectionDetails: {},
+  coreIdea: '',
+  genre: GENRES[0],
+  mood: MOODS[0],
+  instrumentation: '',
+  structure: ['Verse', 'Chorus', 'Verse', 'Chorus', 'Bridge', 'Chorus', 'Outro'],
+  lyrics: '',
+  otherDetails: '',
 };
-
-export const SECTION_TYPES: SectionType[] = [
-    'Intro', 'Verse', 'Pre-Chorus', 'Chorus', 'Bridge', 'Solo', 'Outro'
-];
-
-export const INSTRUMENT_PALETTE: string[] = [
-    'Drums', 'Bass', 'Acoustic Guitar', 'Electric Guitar', 'Piano', 'Keys', 
-    'Synths', 'Strings', 'Brass', 'Woodwinds', 'Lead Vocals', 'Backing Vocals', 'FX'
-];
-
-export const MAX_LYRICS_LENGTH = 1000;
-export const MAX_STYLE_LENGTH = 500;
-export const MAX_STORY_LENGTH = 1500;

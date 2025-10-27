@@ -16,22 +16,12 @@ export default {
           'content-200': '#94a3b8',
         },
         keyframes: {
-          'gradient-bg': {
-            '0%, 100%': { backgroundPosition: '0% 50%' },
-            '50%': { backgroundPosition: '100% 50%' },
-          },
-          'text-shimmer': {
-            '0%, 100%': { backgroundPosition: '0% 50%' },
-            '50%': { backgroundPosition: '100% 50%' },
-          },
           'fade-in-up': {
             '0%': { opacity: '0', transform: 'translateY(20px)' },
             '100%': { opacity: '1', transform: 'translateY(0)' },
           },
         },
         animation: {
-          'gradient-bg': 'gradient-bg 15s ease infinite',
-          'text-shimmer': 'text-shimmer 5s ease infinite',
           'fade-in-up': 'fade-in-up 0.6s ease-out forwards',
         },
         backgroundSize: {

@@ -1,83 +1,78 @@
 import React, { useState } from 'react';
+import { AppState } from './types';
+import { INITIAL_STATE } from './constants';
 import { Step1CoreIdea } from './components/wizard/Step1CoreIdea';
 import { Step2Structure } from './components/wizard/Step2Structure';
 import { Step3Details } from './components/wizard/Step3Details';
 import { Step4Generate } from './components/wizard/Step4Generate';
-import { AppState } from './types';
-import { INITIAL_STATE } from './constants';
 
 function App() {
-  const [currentStep, setCurrentStep] = useState(1);
+  const [step, setStep] = useState(1);
   const [appState, setAppState] = useState<AppState>(INITIAL_STATE);
 
-  const nextStep = () => setCurrentStep(prev => prev + 1);
-  const prevStep = () => setCurrentStep(prev => prev - 1);
-
-  const updateState = (updates: Partial<AppState>) => {
-    setAppState(prev => ({ ...prev, ...updates }));
+  const handleStateChange = (newState: Partial<AppState>) => {
+    setAppState(prevState => ({ ...prevState, ...newState }));
   };
   
+  const nextStep = () => setStep(prev => Math.min(prev + 1, 4));
+  const prevStep = () => setStep(prev => Math.max(prev - 1, 1));
+  const restart = () => {
+    setStep(1);
+    setAppState(INITIAL_STATE);
+  }
+
   const renderStep = () => {
-    switch (currentStep) {
+    switch (step) {
       case 1:
-        return <Step1CoreIdea state={appState} updateState={updateState} nextStep={nextStep} />;
+        return <Step1CoreIdea state={appState} onStateChange={handleStateChange} nextStep={nextStep} />;
       case 2:
-        return <Step2Structure state={appState} updateState={updateState} nextStep={nextStep} prevStep={prevStep} />;
+        return <Step2Structure state={appState} onStateChange={handleStateChange} nextStep={nextStep} prevStep={prevStep} />;
       case 3:
-        return <Step3Details state={appState} updateState={updateState} nextStep={nextStep} prevStep={prevStep} />;
+        return <Step3Details state={appState} onStateChange={handleStateChange} nextStep={nextStep} prevStep={prevStep} />;
       case 4:
         return <Step4Generate state={appState} prevStep={prevStep} />;
       default:
-        return <Step1CoreIdea state={appState} updateState={updateState} nextStep={nextStep} />;
+        return null;
     }
   };
 
-  const progressPercentage = ((currentStep - 1) / 3) * 100;
-
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-base-100 font-sans text-content-100">
-      {/* Animated Background */}
-      <div className="background-container -z-10">
-        <div className="blob blob1"></div>
-        <div className="blob blob2"></div>
-        <div className="blob blob3"></div>
-      </div>
-      
-      {/* Main Content */}
-      <div className="relative z-10 flex min-h-screen flex-col items-center justify-center p-4">
-        <div className="w-full max-w-4xl rounded-xl bg-base-200/80 p-6 shadow-2xl backdrop-blur-lg md:p-10">
-          <header className="mb-8 text-center">
-            <h1 className="bg-gradient-to-r from-brand-primary to-brand-secondary bg-clip-text text-4xl font-bold text-transparent animate-text-shimmer bg-400% md:text-5xl">
-              Song Prompt Builder
-            </h1>
-            <p className="mx-auto mt-3 max-w-2xl text-lg text-content-200">
-              A step-by-step guide to creating the perfect, detailed music prompt.
-            </p>
-          </header>
-
-          {/* Progress Bar */}
-          <div className="mb-8">
-              <div className="relative h-2 rounded-full bg-base-300">
-                  <div 
-                      className="absolute left-0 top-0 h-2 rounded-full bg-gradient-to-r from-brand-primary to-brand-secondary transition-all duration-500 ease-out" 
-                      style={{ width: `${progressPercentage}%`}}
-                  ></div>
-              </div>
-              <div className="mt-2 grid grid-cols-4 text-center text-xs text-content-200">
-                  <span className={currentStep >= 1 ? 'font-bold text-content-100' : ''}>Core Idea</span>
-                  <span className={currentStep >= 2 ? 'font-bold text-content-100' : ''}>Structure</span>
-                  <span className={currentStep >= 3 ? 'font-bold text-content-100' : ''}>Details</span>
-                  <span className={currentStep >= 4 ? 'font-bold text-content-100' : ''}>Generate</span>
-              </div>
+    <div className="bg-base-100 min-h-screen text-content-100 font-sans">
+      <div className="relative isolate min-h-screen">
+          <div 
+              className="absolute inset-x-0 top-[-10rem] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[-20rem]" 
+              aria-hidden="true"
+          >
+              <div 
+                  className="relative left-1/2 -z-10 aspect-[1155/678] w-[36.125rem] max-w-none -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-30 sm:left-[calc(50%-40rem)] sm:w-[72.1875rem]" 
+                  style={{clipPath: 'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)'}}
+              ></div>
           </div>
           
-          <main>
-            {renderStep()}
+          <main className="container mx-auto px-4 py-8 md:py-16">
+              <header className="text-center mb-10">
+                  <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-content-100">
+                    Suno Prompt Wizard
+                  </h1>
+                  <p className="mt-4 text-lg text-content-200 max-w-2xl mx-auto">
+                    Craft the perfect, production-ready prompt for your next AI-generated masterpiece.
+                  </p>
+              </header>
+
+              <div className="max-w-3xl mx-auto bg-base-200/50 p-6 md:p-8 rounded-2xl shadow-2xl border border-base-300/50 backdrop-blur-sm">
+                {renderStep()}
+              </div>
+
+              {step === 4 && (
+                <div className="text-center mt-8">
+                  <button onClick={restart} className="text-brand-primary hover:text-brand-secondary transition-colors">Start Over</button>
+                </div>
+              )}
+
+              <footer className="text-center mt-16 text-content-200 text-sm">
+                  <p>Powered by Google Gemini</p>
+              </footer>
           </main>
-        </div>
-        <footer className="mt-8 text-center text-sm text-content-200">
-          <p>Powered by Google Gemini. Built for creativity.</p>
-        </footer>
       </div>
     </div>
   );
