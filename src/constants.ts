@@ -9,7 +9,7 @@ export const GENRES = [
 ];
 
 export const MOODS = [
-  "Happy", "Sad", "Energetic", "Relaxing", "Romantic", "Epic", "Melancholic", "Uplifting", "Mysterious", "Aggressive", "Nostalgic"
+  "Happy", "Sad", "Energetic", "Relaxing", "Romantic", "Epic", "Melancholic", "Uplifting", "Mysterious", "Aggressive", "Nostalgic", "Dreamy", "Tense", "Peaceful", "Passionate", "Cinematic", "Hypnotic", "Dark", "Whimsical", "Anxious", "Hopeful", "Playful", "Introspective", "Haunting", "Serene", "Funky", "Gritty", "Lush", "Minimalist", "Chaotic", "Euphoric", "Brooding"
 ];
 
 export const STRUCTURE_PARTS = [
@@ -32,7 +32,7 @@ const initialStructure = [
 export const INITIAL_STATE: AppState = {
   coreIdea: '',
   genre: [GENRES[0]],
-  mood: MOODS[0],
+  mood: [MOODS[0]],
   instrumentation: '',
   structure: initialStructure,
   lyrics: '',

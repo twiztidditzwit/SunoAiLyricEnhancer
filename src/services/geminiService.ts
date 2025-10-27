@@ -11,7 +11,7 @@ Here are the details for the song:
 
 **Core Idea:** ${state.coreIdea}
 **Genre:** ${state.genre.join(', ')}
-**Mood:** ${state.mood}
+**Mood:** ${state.mood.join(', ')}
 **Instrumentation:** ${state.instrumentation}
 **Structure:** ${state.structure.map(s => s.name).join(', ')}
 ${state.lyrics ? `**Lyrics:**\n${state.lyrics}` : `**Lyrics:** The AI should generate creative and original lyrics based on the core idea. Avoid clichés and overused imagery like "neon lights," "city that never sleeps," "shattered glass," or "shadows dancing."`}

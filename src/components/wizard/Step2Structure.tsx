@@ -64,6 +64,17 @@ export const Step2Structure: React.FC<Props> = ({ state, onStateChange, nextStep
     }
   };
 
+  const handleMoodToggle = (mood: string) => {
+    const newMoods = state.mood.includes(mood)
+      ? state.mood.filter(m => m !== mood)
+      : [...state.mood, mood];
+    
+    // Ensure at least one mood is always selected
+    if (newMoods.length >= 1) {
+      onStateChange({ mood: newMoods });
+    }
+  };
+
 
   return (
     <div className="space-y-6 animate-fade-in-up">
@@ -94,29 +105,40 @@ export const Step2Structure: React.FC<Props> = ({ state, onStateChange, nextStep
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label htmlFor="mood" className="block text-sm font-medium text-content-100 mb-1">Mood</label>
-          <select
-            id="mood"
-            value={state.mood}
-            onChange={(e) => onStateChange({ mood: e.target.value })}
+      <div>
+        <label className="block text-sm font-medium text-content-100 mb-2">
+            Mood (select one or more)
+        </label>
+        <div className="flex flex-wrap gap-2">
+            {MOODS.map(m => {
+                const isSelected = state.mood.includes(m);
+                return (
+                    <button
+                        key={m}
+                        onClick={() => handleMoodToggle(m)}
+                        className={`px-3 py-1 rounded-full text-sm font-medium border transition-colors duration-200 ${
+                            isSelected 
+                                ? 'bg-brand-secondary border-brand-secondary text-white' 
+                                : 'bg-base-100 border-base-300 text-content-100 hover:bg-base-300/50 hover:border-base-300'
+                        }`}
+                    >
+                        {m}
+                    </button>
+                )
+            })}
+        </div>
+      </div>
+        
+      <div>
+          <label htmlFor="instrumentation" className="block text-sm font-medium text-content-100 mb-1">Instrumentation</label>
+          <input
+            type="text"
+            id="instrumentation"
+            value={state.instrumentation}
+            onChange={(e) => onStateChange({ instrumentation: e.target.value })}
             className="w-full p-2 bg-base-200 border border-base-300 rounded-lg"
-          >
-            {MOODS.map(m => <option key={m} value={m}>{m}</option>)}
-          </select>
-        </div>
-        <div>
-            <label htmlFor="instrumentation" className="block text-sm font-medium text-content-100 mb-1">Instrumentation</label>
-            <input
-              type="text"
-              id="instrumentation"
-              value={state.instrumentation}
-              onChange={(e) => onStateChange({ instrumentation: e.target.value })}
-              className="w-full p-2 bg-base-200 border border-base-300 rounded-lg"
-              placeholder="e.g., Acoustic guitar, synth pads, 808 drums"
-            />
-        </div>
+            placeholder="e.g., Acoustic guitar, synth pads, 808 drums"
+          />
       </div>
 
       <div>

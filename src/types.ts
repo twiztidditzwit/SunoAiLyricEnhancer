@@ -6,7 +6,7 @@ export interface SongSection {
 export interface AppState {
   coreIdea: string;
   genre: string[];
-  mood: string;
+  mood: string[];
   instrumentation: string;
   structure: SongSection[];
   lyrics: string;
