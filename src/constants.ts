@@ -16,12 +16,25 @@ export const STRUCTURE_PARTS = [
   "Intro", "Verse", "Pre-Chorus", "Chorus", "Post-Chorus", "Bridge", "Guitar Solo", "Instrumental Break", "Outro", "Fade Out"
 ];
 
+export const generateId = () => `_${Math.random().toString(36).substring(2, 11)}`;
+
+const initialStructure = [
+  { id: generateId(), name: 'Verse' },
+  { id: generateId(), name: 'Chorus' },
+  { id: generateId(), name: 'Verse' },
+  { id: generateId(), name: 'Chorus' },
+  { id: generateId(), name: 'Bridge' },
+  { id: generateId(), name: 'Chorus' },
+  { id: generateId(), name: 'Outro' },
+];
+
+
 export const INITIAL_STATE: AppState = {
   coreIdea: '',
   genre: GENRES[0],
   mood: MOODS[0],
   instrumentation: '',
-  structure: ['Verse', 'Chorus', 'Verse', 'Chorus', 'Bridge', 'Chorus', 'Outro'],
+  structure: initialStructure,
   lyrics: '',
   otherDetails: '',
 };

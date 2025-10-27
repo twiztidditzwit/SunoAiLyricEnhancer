@@ -1,9 +1,14 @@
+export interface SongSection {
+  id: string;
+  name: string;
+}
+
 export interface AppState {
   coreIdea: string;
   genre: string;
   mood: string;
   instrumentation: string;
-  structure: string[]; // e.g., ['Verse', 'Chorus', 'Verse', 'Chorus', 'Bridge', 'Chorus', 'Outro']
+  structure: SongSection[];
   lyrics: string;
   otherDetails: string;
 }

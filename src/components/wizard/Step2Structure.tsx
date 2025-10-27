@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { AppState } from '../../types';
-import { GENRES, MOODS, STRUCTURE_PARTS } from '../../constants';
+import { GENRES, MOODS, STRUCTURE_PARTS, generateId } from '../../constants';
+import { DragHandleIcon } from '../icons/DragHandleIcon';
 
 interface Props {
   state: AppState;
@@ -10,19 +11,45 @@ interface Props {
 }
 
 export const Step2Structure: React.FC<Props> = ({ state, onStateChange, nextStep, prevStep }) => {
+  const dragItem = useRef<number | null>(null);
+  const dragOverItem = useRef<number | null>(null);
 
-  const handleStructureChange = (index: number, value: string) => {
+  const handleDragStart = (index: number) => {
+    dragItem.current = index;
+  };
+
+  const handleDragEnter = (index: number) => {
+    dragOverItem.current = index;
+  };
+
+  const handleDrop = () => {
+    if (dragItem.current === null || dragOverItem.current === null || dragItem.current === dragOverItem.current) {
+        dragItem.current = null;
+        dragOverItem.current = null;
+        return;
+    }
     const newStructure = [...state.structure];
-    newStructure[index] = value;
+    const draggedItemContent = newStructure.splice(dragItem.current, 1)[0];
+    newStructure.splice(dragOverItem.current, 0, draggedItemContent);
+    onStateChange({ structure: newStructure });
+    dragItem.current = null;
+    dragOverItem.current = null;
+  };
+  
+  const handleStructureChange = (id: string, newName: string) => {
+    const newStructure = state.structure.map(part => 
+      part.id === id ? { ...part, name: newName } : part
+    );
     onStateChange({ structure: newStructure });
   };
 
   const addStructurePart = () => {
-    onStateChange({ structure: [...state.structure, 'Verse'] });
+    const newPart = { id: generateId(), name: 'Verse' };
+    onStateChange({ structure: [...state.structure, newPart] });
   };
   
-  const removeStructurePart = (index: number) => {
-    const newStructure = state.structure.filter((_, i) => i !== index);
+  const removeStructurePart = (id: string) => {
+    const newStructure = state.structure.filter(part => part.id !== id);
     onStateChange({ structure: newStructure });
   };
 
@@ -71,19 +98,29 @@ export const Step2Structure: React.FC<Props> = ({ state, onStateChange, nextStep
 
       <div>
         <label className="block text-sm font-medium text-content-100 mb-2">Song Structure</label>
-        <div className="space-y-2">
+        <div className="space-y-2" onDrop={handleDrop} onDragOver={(e) => e.preventDefault()}>
           {state.structure.map((part, index) => (
-            <div key={index} className="flex items-center gap-2">
+            <div 
+              key={part.id} 
+              className="flex items-center gap-2 bg-base-100 p-2 rounded-lg"
+              draggable
+              onDragStart={() => handleDragStart(index)}
+              onDragEnter={() => handleDragEnter(index)}
+            >
+              <div className="cursor-grab text-content-200">
+                <DragHandleIcon />
+              </div>
               <select
-                value={part}
-                onChange={(e) => handleStructureChange(index, e.target.value)}
+                value={part.name}
+                onChange={(e) => handleStructureChange(part.id, e.target.value)}
                 className="w-full p-2 bg-base-200 border border-base-300 rounded-lg"
               >
                 {STRUCTURE_PARTS.map(p => <option key={p} value={p}>{p}</option>)}
               </select>
               <button
-                onClick={() => removeStructurePart(index)}
-                className="p-2 text-red-400 hover:text-red-300"
+                onClick={() => removeStructurePart(part.id)}
+                className="p-2 text-red-400 hover:text-red-300 flex-shrink-0"
+                aria-label={`Remove ${part.name}`}
               >
                 Remove
               </button>
