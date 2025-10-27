@@ -17,7 +17,7 @@ function App() {
   const [story, setStory] = useState('');
   const [settings, setSettings] = useState<Settings>({
     mood: 'mellow',
-    rhymeScheme: 'AABB',
+    rhymeScheme: 'aabb',
     originality: 'somewhat-original',
   });
   

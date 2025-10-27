@@ -8,6 +8,25 @@ if (!process.env.API_KEY) {
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
+const getRhymeSchemeInstruction = (scheme: string): string => {
+    switch (scheme) {
+        case 'free-verse':
+            return 'No specific rhyme scheme is required (Free Verse).';
+        case 'chain-rhyme':
+            return 'Follow a Chain Rhyme scheme, where a line from one stanza rhymes with a line in the next (e.g., ABA BCB CDC).';
+        case 'aabb':
+        case 'abab':
+        case 'abcb':
+        case 'abba':
+        case 'aaaa':
+        case 'aaba':
+        case 'aabccb':
+            return `Follow a ${scheme.toUpperCase()} rhyme scheme.`;
+        default:
+            return 'Follow the specified rhyme scheme.';
+    }
+};
+
 const buildPrompt = (request: LyricRequest): string => {
     const { lyrics, style, story, settings } = request;
     const { mood, rhymeScheme, originality } = settings;
@@ -41,7 +60,7 @@ ${lyrics}
     prompt += `
 **Creative Constraints:**
 - **Mood:** ${mood}
-- **Rhyme Scheme:** ${rhymeScheme === 'none' ? 'No specific rhyme scheme required.' : `Follow a ${rhymeScheme} rhyme scheme.`}
+- **Rhyme Scheme:** ${getRhymeSchemeInstruction(rhymeScheme)}
 - **Originality:** Aim for a level of originality that is ${originality.replace('-', ' ')}. Avoid cliches if "highly-original" is selected.
 
 Based on all the provided information, please generate a new, complete set of lyrics.

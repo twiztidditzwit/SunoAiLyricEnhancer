@@ -45,10 +45,15 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ settings, onSettingsChang
                         onChange={(e) => handleSettingChange('rhymeScheme', e.target.value as RhymeScheme)}
                         className="w-full bg-base-300 border border-base-300 text-content-100 rounded-md shadow-sm focus:ring-brand-primary focus:border-brand-primary"
                     >
-                        <option value="AABB">AABB</option>
-                        <option value="ABAB">ABAB</option>
-                        <option value="ABCB">ABCB</option>
-                        <option value="none">None</option>
+                        <option value="free-verse">Free Verse</option>
+                        <option value="aabb">AABB (Couplets)</option>
+                        <option value="abab">ABAB (Alternate)</option>
+                        <option value="abcb">ABCB (Simple 4-Line)</option>
+                        <option value="abba">ABBA (Enclosed)</option>
+                        <option value="aaaa">AAAA (Monorhyme)</option>
+                        <option value="aaba">AABA</option>
+                        <option value="aabccb">AABCCB</option>
+                        <option value="chain-rhyme">Chain Rhyme (ABA BCB)</option>
                     </select>
                 </div>
 
