@@ -1,9 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { generateDetailedMusicPrompt } from './services/geminiService';
-import { AppSettings } from './types';
-import { SUNO_PROMPT_MAX_LENGTH, STYLE_MAX_LENGTH, FEEL_OPTIONS, MOOD_OPTIONS, SPEED_OPTIONS, VOCAL_STYLE_OPTIONS, MASTERING_STYLE_OPTIONS } from './constants';
+import { SUNO_PROMPT_MAX_LENGTH } from './constants';
 import { checkForOverusedImagery } from './utils/feedbackUtils';
-import { SettingsPanel } from './components/SettingsPanel';
 import { CharacterCounter } from './components/CharacterCounter';
 import { OriginalityFeedback } from './components/OriginalityFeedback';
 import { ClipboardIcon } from './components/icons/ClipboardIcon';
@@ -12,17 +10,7 @@ import { CheckIcon } from './components/icons/CheckIcon';
 
 const App: React.FC = () => {
     const [lyrics, setLyrics] = useState<string>('');
-    const [settings, setSettings] = useState<AppSettings>({
-        feel: FEEL_OPTIONS[0],
-        mood: MOOD_OPTIONS[0],
-        speed: SPEED_OPTIONS[2],
-        vocalStyle: VOCAL_STYLE_OPTIONS[0],
-        instrumentation: [],
-        autoExpand: true,
-        mastering: MASTERING_STYLE_OPTIONS[0],
-        storyMode: false,
-        storyPrompt: '',
-    });
+    const [styleDescription, setStyleDescription] = useState<string>('');
     const [outputPrompt, setOutputPrompt] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
@@ -30,8 +18,6 @@ const App: React.FC = () => {
     const [isMounted, setIsMounted] = useState<boolean>(false);
     const [originalityFeedback, setOriginalityFeedback] = useState<string | null>(null);
     
-    // FIX: Per coding guidelines, API key must be read from process.env.API_KEY.
-    // This also resolves the TypeScript error for `import.meta.env`.
     const apiKey = process.env.API_KEY;
 
     useEffect(() => {
@@ -39,24 +25,20 @@ const App: React.FC = () => {
     }, []);
 
     const handleGenerate = useCallback(async () => {
+        if (!styleDescription.trim()) {
+            setError('Please provide a style description.');
+            return;
+        }
+
         setIsLoading(true);
         setError(null);
         setOutputPrompt('');
         setOriginalityFeedback(null);
 
-        // If lyrics are empty, update the UI to reflect it's an instrumental generation.
-        // The service handles the actual logic, but this keeps the UI consistent.
-        const isInstrumental = lyrics.trim().length === 0;
-        if (isInstrumental && settings.vocalStyle !== 'No Vocals (Instrumental)') {
-            setSettings(prev => ({ ...prev, vocalStyle: 'No Vocals (Instrumental)' }));
-        }
-
         try {
-            // A single, powerful call to the new service function.
-            const detailedPrompt = await generateDetailedMusicPrompt(lyrics, settings);
+            const detailedPrompt = await generateDetailedMusicPrompt(lyrics, styleDescription);
             setOutputPrompt(detailedPrompt);
 
-            // Originality check can still be performed on the final output.
             const feedback = checkForOverusedImagery(detailedPrompt);
             setOriginalityFeedback(feedback);
 
@@ -66,7 +48,7 @@ const App: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [lyrics, settings]);
+    }, [lyrics, styleDescription]);
     
     const handleCopyPromptToClipboard = () => {
         if (outputPrompt && !isCopied) {
@@ -85,7 +67,6 @@ const App: React.FC = () => {
                 The Gemini API key is missing. This application cannot function without it.
               </p>
               <p className="text-content-200">
-                {/* FIX: Updated environment variable name in user-facing error message. */}
                 Please add your API key as an environment variable named <code className="bg-base-300 px-2 py-1 rounded-md text-yellow-300">API_KEY</code> in your Vercel project settings.
               </p>
               <a 
@@ -117,28 +98,34 @@ const App: React.FC = () => {
                     <div className="flex flex-col gap-6">
                         {/* INPUTS */}
                         <div className="bg-base-200 p-6 rounded-lg shadow-lg">
-                             <label htmlFor="lyrics" className="block text-xl font-semibold mb-2">Lyrics with Sections</label>
-                             <p className="text-sm text-content-200 mb-3">Paste your lyrics here. Use brackets like [Verse], [Chorus], [Intro] to define sections.</p>
+                             <label htmlFor="lyrics" className="block text-xl font-semibold mb-2">1. Add Lyrics (Optional)</label>
+                             <p className="text-sm text-content-200 mb-3">Paste lyrics with sections like [Verse], [Chorus]. Leave blank to generate an instrumental track.</p>
                             <textarea
                                 id="lyrics"
                                 value={lyrics}
                                 onChange={(e) => setLyrics(e.target.value)}
-                                placeholder={`[Intro]\n...\n[Verse]\nThe rain falls down on the cold, dark street\n...\n[Chorus]\nAnd I'm walking alone again\n...\n\n(Leave blank to generate an instrumental track)`}
-                                className="w-full h-96 md:h-[35rem] p-3 bg-base-300 rounded-md border border-transparent focus:ring-2 focus:ring-brand-primary focus:outline-none resize-y transition-shadow,border-color duration-200"
+                                placeholder="[Intro]...[Verse]The rain falls...[Chorus]And I'm walking alone..."
+                                className="w-full h-80 p-3 bg-base-300 rounded-md border border-transparent focus:ring-2 focus:ring-brand-primary focus:outline-none resize-y transition-shadow,border-color duration-200"
                             />
                         </div>
 
                         {/* SETTINGS */}
                          <div className="bg-base-200 p-6 rounded-lg shadow-lg">
-                            <h2 className="text-xl font-semibold mb-4">Song Characteristics</h2>
-                            <p className="text-sm text-content-200 mb-3">Select the characteristics to automatically generate the song style and mixing phrases.</p>
-                            <SettingsPanel settings={settings} setSettings={setSettings} />
+                            <h2 className="text-xl font-semibold mb-2">2. Describe The Style</h2>
+                            <p className="text-sm text-content-200 mb-3">Describe the genre, mood, and instrumentation. Be as simple or as detailed as you like.</p>
+                            <textarea
+                                id="style-description"
+                                value={styleDescription}
+                                onChange={(e) => setStyleDescription(e.target.value)}
+                                placeholder="e.g., A sad, slow, acoustic ballad with female vocals and a lofi feel."
+                                className="w-full h-32 p-3 bg-base-300 rounded-md border border-transparent focus:ring-2 focus:ring-brand-primary focus:outline-none resize-y transition-shadow,border-color duration-200"
+                            />
                         </div>
 
                         {/* ACTION */}
                         <button
                             onClick={handleGenerate}
-                            disabled={isLoading}
+                            disabled={isLoading || !styleDescription.trim()}
                             className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-brand-primary to-brand-secondary text-white font-bold py-3 px-4 rounded-lg shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed transform transition-all duration-200"
                         >
                             {isLoading ? (
