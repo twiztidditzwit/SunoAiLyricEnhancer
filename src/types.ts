@@ -1,28 +1,30 @@
-// Fix: Defined necessary TypeScript types for the application.
-export type Mood = 'upbeat' | 'mellow' | 'introspective' | 'intense' | 'experimental';
+export type SectionType = 'Intro' | 'Verse' | 'Chorus' | 'Pre-Chorus' | 'Bridge' | 'Solo' | 'Outro';
 
-export type RhymeScheme = 
-    | 'free-verse'
-    | 'aabb'
-    | 'abab'
-    | 'abcb'
-    | 'abba'
-    | 'aaaa'
-    | 'aaba'
-    | 'aabccb'
-    | 'chain-rhyme';
-    
-export type Originality = 'conventional' | 'somewhat-original' | 'highly-original';
-
-export interface Settings {
-    mood: Mood;
-    rhymeScheme: RhymeScheme;
-    originality: Originality;
+export interface SongSection {
+  id: string; 
+  type: SectionType;
+  name: string; 
 }
 
-export interface LyricRequest {
-    lyrics: string;
-    style: string;
-    story: string;
-    settings: Settings;
+export interface SectionDetails {
+  lyrics: string;
+  instruments: {
+    [instrument: string]: string;
+  };
+}
+
+export interface AppState {
+  // Step 1
+  genre: string;
+  mood: string;
+  theme: string;
+
+  // Step 2
+  instruments: string[];
+  songStructure: SongSection[];
+
+  // Step 3
+  sectionDetails: {
+    [sectionId: string]: SectionDetails;
+  };
 }

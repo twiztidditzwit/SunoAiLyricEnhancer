@@ -1,6 +1,5 @@
-// Fix: Implemented the Gemini API service to generate lyrics.
 import { GoogleGenAI } from "@google/genai";
-import { LyricRequest } from '../types';
+import { AppState, SongSection } from '../types';
 
 if (!process.env.API_KEY) {
     throw new Error("API_KEY environment variable is not set");
@@ -8,71 +7,63 @@ if (!process.env.API_KEY) {
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-const getRhymeSchemeInstruction = (scheme: string): string => {
-    switch (scheme) {
-        case 'free-verse':
-            return 'No specific rhyme scheme is required (Free Verse).';
-        case 'chain-rhyme':
-            return 'Follow a Chain Rhyme scheme, where a line from one stanza rhymes with a line in the next (e.g., ABA BCB CDC).';
-        case 'aabb':
-        case 'abab':
-        case 'abcb':
-        case 'abba':
-        case 'aaaa':
-        case 'aaba':
-        case 'aabccb':
-            return `Follow a ${scheme.toUpperCase()} rhyme scheme.`;
-        default:
-            return 'Follow the specified rhyme scheme.';
-    }
-};
+const buildPrompt = (state: AppState): string => {
+    let prompt = `You are an expert music producer and audio engineer creating a detailed prompt for a music AI like Suno.
+Your task is to take a structured song concept and format it into a complete, professional, copy-paste ready prompt.
 
-const buildPrompt = (request: LyricRequest): string => {
-    const { lyrics, style, story, settings } = request;
-    const { mood, rhymeScheme, originality } = settings;
+The final output MUST follow this format for each section:
+[Section Name – musical vibe; key instruments
+{Detailed mixing and production notes, including specific frequencies, compression, reverb, effects, and mastering targets like LUFS.}]
+Lyrics for the section...
+⸻
 
-    let prompt = `You are an expert lyricist and songwriter's assistant. Your task is to refine and enhance a song concept.
+Here is the structured song concept provided by the user:
 
-Here is the initial concept:
+## Overall Vibe
+- Genre: ${state.genre || 'Not specified'}
+- Mood: ${state.mood || 'Not specified'}
+- Theme: ${state.theme || 'Not specified'}
+
+## Selected Instruments
+${state.instruments.length > 0 ? state.instruments.join(', ') : 'Not specified'}
+
+## Song Structure and Details
 `;
 
-    if (lyrics) {
+    state.songStructure.forEach((section: SongSection) => {
+        const details = state.sectionDetails[section.id] || { lyrics: '', instruments: {} };
         prompt += `
-**Draft Lyrics:**
 ---
-${lyrics}
----
-`;
-    }
+### Section: ${section.name} (${section.type})
 
-    if (style) {
-        prompt += `
-**Desired Style & Genre:** ${style}
-`;
-    }
+**Lyrics:**
+${details.lyrics || '(No lyrics provided for this section)'}
 
-    if (story) {
-        prompt += `
-**Story or Theme:** ${story}
+**Instrument Notes:**
 `;
-    }
+        if (state.instruments.length > 0) {
+            state.instruments.forEach(instrument => {
+                prompt += `- ${instrument}: ${details.instruments[instrument] || 'No specific notes'}\n`;
+            });
+        } else {
+            prompt += `(No instruments selected)\n`;
+        }
+    });
 
     prompt += `
-**Creative Constraints:**
-- **Mood:** ${mood}
-- **Rhyme Scheme:** ${getRhymeSchemeInstruction(rhymeScheme)}
-- **Originality:** Aim for a level of originality that is ${originality.replace('-', ' ')}. Avoid cliches if "highly-original" is selected.
+---
 
-Based on all the provided information, please generate a new, complete set of lyrics.
-The output should be only the lyrics, formatted with clear verse, chorus, and bridge sections where appropriate. Do not include any other explanatory text, preamble, or markdown formatting like \`\`\`.
+Now, based on ALL of the above information, generate the complete and final Suno prompt.
+Infer the professional mixing/mastering details ({...}) from the user's high-level notes and the overall genre/mood. Be creative and specific. For example, specify amp models for guitars, types of synth pads, drum machine models, compression ratios, and reverb lengths.
+Ensure the final output is ONLY the formatted prompt and nothing else. Do not include any preamble, explanation, or markdown formatting.
 `;
 
     return prompt;
 };
 
-export const generateLyrics = async (request: LyricRequest): Promise<string> => {
-    const model = 'gemini-2.5-flash'; // Basic text task.
-    const prompt = buildPrompt(request);
+export const generateSunoPrompt = async (state: AppState): Promise<string> => {
+    const model = 'gemini-2.5-pro'; // Use a more powerful model for this complex task.
+    const prompt = buildPrompt(state);
 
     try {
         const response = await ai.models.generateContent({
@@ -80,14 +71,10 @@ export const generateLyrics = async (request: LyricRequest): Promise<string> => 
             contents: prompt,
         });
         
-        // Use the .text property to get the response text directly.
         return response.text.trim();
 
     } catch (error) {
-        console.error("Error generating lyrics with Gemini API:", error);
-        if (error instanceof Error) {
-            return `An error occurred while generating lyrics: ${error.message}`;
-        }
-        return "An unknown error occurred while generating lyrics.";
+        console.error("Error generating prompt with Gemini API:", error);
+        throw new Error("Failed to generate prompt. Check your API key and try again.");
     }
 };
