@@ -5,7 +5,7 @@ export interface SongSection {
 
 export interface AppState {
   coreIdea: string;
-  genre: string;
+  genre: string[];
   mood: string;
   instrumentation: string;
   structure: SongSection[];

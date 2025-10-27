@@ -10,7 +10,7 @@ const buildPrompt = (state: AppState): string => {
 Here are the details for the song:
 
 **Core Idea:** ${state.coreIdea}
-**Genre:** ${state.genre}
+**Genre:** ${state.genre.join(', ')}
 **Mood:** ${state.mood}
 **Instrumentation:** ${state.instrumentation}
 **Structure:** ${state.structure.map(s => s.name).join(', ')}

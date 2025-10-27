@@ -31,7 +31,7 @@ const initialStructure = [
 
 export const INITIAL_STATE: AppState = {
   coreIdea: '',
-  genre: GENRES[0],
+  genre: [GENRES[0]],
   mood: MOODS[0],
   instrumentation: '',
   structure: initialStructure,
